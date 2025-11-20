@@ -4,6 +4,7 @@ import MainLayout from "./layouts/MainLayout";
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import LoginPage from "./pages/Login/LoginPage";
 import NotFound from "./pages/NotFound";
+import "./index.css";
 
 export default function App() {
   return (
