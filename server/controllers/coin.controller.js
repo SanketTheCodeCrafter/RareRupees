@@ -67,20 +67,56 @@ export const createCoin = async (req, res) => {
 
 export const updateCoin = async (req, res) => {
   try {
-    const updates = req.body;
+    const updates = req.body || {};
+
+    // Sanitize incoming updates: remove unset/empty values and cast types
+    const sanitized = {};
+    const numericFields = ["year", "condition"];
+    for (const [key, val] of Object.entries(updates)) {
+      // skip explicit undefined/null
+      if (val === undefined || val === null) continue;
+
+      // handle strings coming from form-data
+      if (typeof val === "string") {
+        const trimmed = val.trim();
+        // skip empty or literal "undefined"
+        if (trimmed === "" || trimmed.toLowerCase() === "undefined") continue;
+
+        if (numericFields.includes(key)) {
+          const n = Number(trimmed);
+          if (!Number.isNaN(n)) sanitized[key] = n;
+          // if not a number, skip the field to avoid CastError
+          continue;
+        }
+
+        if (key === "isSpecial") {
+          const lower = trimmed.toLowerCase();
+          if (lower === "true" || lower === "false") sanitized[key] = lower === "true";
+          else sanitized[key] = Boolean(trimmed);
+          continue;
+        }
+
+        sanitized[key] = trimmed;
+        continue;
+      }
+
+      // non-string values — include as-is
+      sanitized[key] = val;
+    }
 
     const frontFile = req.files?.frontImage?.[0];
     const rearFile = req.files?.rearImage?.[0];
 
     if (frontFile) {
-      updates.frontImage = await uploadBufferToCloudinary(frontFile.buffer, "rarerupees");
+      sanitized.frontImage = await uploadBufferToCloudinary(frontFile.buffer, "rarerupees");
     }
 
     if (rearFile) {
-      updates.rearImage = await uploadBufferToCloudinary(rearFile.buffer, "rarerupees");
+      sanitized.rearImage = await uploadBufferToCloudinary(rearFile.buffer, "rarerupees");
     }
 
-    const updated = await Coin.findByIdAndUpdate(req.params.id, updates, { new: true });
+    // Use runValidators to ensure updated values match schema and return the new document
+    const updated = await Coin.findByIdAndUpdate(req.params.id, sanitized, { new: true, runValidators: true });
 
     if (!updated) return res.status(404).json({ message: "Coin not found" });
 
