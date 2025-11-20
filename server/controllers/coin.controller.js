@@ -37,10 +37,9 @@ export const createCoin = async (req, res) => {
     const rearFile = req.files?.rearImage?.[0];
 
     if (!frontFile || !rearFile) {
-      return res.status(400).json({ message: "Both images are required" });
+      return res.status(400).json({ success: false, message: "Both images are required" });
     }
 
-    // Upload to Cloudinary
     const frontImageUrl = await uploadBufferToCloudinary(frontFile.buffer, "rarerupees");
     const rearImageUrl = await uploadBufferToCloudinary(rearFile.buffer, "rarerupees");
 
@@ -57,11 +56,15 @@ export const createCoin = async (req, res) => {
 
     await coin.save();
 
-    res.status(201).json(coin);
+    res.status(201).json({
+      success: true,
+      message: "Coin created successfully",
+      data: coin
+    });
 
   } catch (err) {
     console.error("createCoin error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -73,34 +76,24 @@ export const updateCoin = async (req, res) => {
     const sanitized = {};
     const numericFields = ["year", "condition"];
     for (const [key, val] of Object.entries(updates)) {
-      // skip explicit undefined/null
       if (val === undefined || val === null) continue;
-
-      // handle strings coming from form-data
       if (typeof val === "string") {
         const trimmed = val.trim();
-        // skip empty or literal "undefined"
         if (trimmed === "" || trimmed.toLowerCase() === "undefined") continue;
-
         if (numericFields.includes(key)) {
           const n = Number(trimmed);
           if (!Number.isNaN(n)) sanitized[key] = n;
-          // if not a number, skip the field to avoid CastError
           continue;
         }
-
         if (key === "isSpecial") {
           const lower = trimmed.toLowerCase();
           if (lower === "true" || lower === "false") sanitized[key] = lower === "true";
           else sanitized[key] = Boolean(trimmed);
           continue;
         }
-
         sanitized[key] = trimmed;
         continue;
       }
-
-      // non-string values — include as-is
       sanitized[key] = val;
     }
 
@@ -115,26 +108,24 @@ export const updateCoin = async (req, res) => {
       sanitized.rearImage = await uploadBufferToCloudinary(rearFile.buffer, "rarerupees");
     }
 
-    // Use runValidators to ensure updated values match schema and return the new document
     const updated = await Coin.findByIdAndUpdate(req.params.id, sanitized, { new: true, runValidators: true });
 
-    if (!updated) return res.status(404).json({ message: "Coin not found" });
+    if (!updated) return res.status(404).json({ success: false, message: "Coin not found" });
 
-    res.json(updated);
-
+    res.json({ success: true, message: "Coin updated successfully", data: updated });
   } catch (err) {
     console.error("updateCoin error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: err.message || "Server error" });
   }
 };
 
 export const deleteCoin = async (req, res) => {
   try {
     const removed = await Coin.findByIdAndDelete(req.params.id);
-    if (!removed) return res.status(404).json({ message: "Coin not found" });
-    res.json({ message: "Deleted successfully" });
+    if (!removed) return res.status(404).json({ success: false, message: "Coin not found" });
+    res.json({ success: true, message: "Coin deleted successfully" });
   } catch (err) {
     console.error("deleteCoin error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: err.message || "Server error" });
   }
 };

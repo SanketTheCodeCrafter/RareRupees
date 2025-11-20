@@ -1,3 +1,4 @@
+// filename: src/context/CoinsContext.jsx
 import {
   createContext,
   useContext,
@@ -14,6 +15,8 @@ import {
   deleteCoinAPI,
 } from "../api/coin.api";
 
+import toast from "react-hot-toast";
+
 const CoinsContext = createContext();
 
 export const CoinsProvider = ({ children }) => {
@@ -22,15 +25,15 @@ export const CoinsProvider = ({ children }) => {
   const [activeCoin, setActiveCoin] = useState(null);
   const [error, setError] = useState(null);
 
-  // Initial fetch
+  // Load all coins
   const loadCoins = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await fetchCoinsAPI();
-      setCoins(data);
+      const res = await fetchCoinsAPI();
+      setCoins(res);
     } catch (err) {
       console.error("Error loading coins:", err);
-      setError("Failed to load coins");
+      toast.error("Failed to load coins");
     } finally {
       setLoading(false);
     }
@@ -40,62 +43,24 @@ export const CoinsProvider = ({ children }) => {
     loadCoins();
   }, [loadCoins]);
 
-  // GET one coin
+  // Fetch a single coin
   const getCoin = async (id) => {
     try {
       const coin = await fetchCoinAPI(id);
       setActiveCoin(coin);
       return coin;
     } catch (err) {
-      console.error("Fetch coin error:", err);
-      setError("Failed to fetch coin");
+      toast.error("Failed to fetch coin");
     }
   };
 
-  // CREATE coin with dual image upload
+  // CREATE coin
   const createCoin = async (payload) => {
     try {
       setLoading(true);
 
       const formData = new FormData();
 
-      // Append images
-      formData.append("frontImage", payload.frontImage);
-      formData.append("rearImage", payload.rearImage);
-
-      // Append all fields
-      formData.append("denomination", payload.denomination);
-      formData.append("year", payload.year);
-      formData.append("mint", payload.mint);
-      formData.append("condition", payload.condition);
-      formData.append("mark", payload.mark);
-      formData.append("isSpecial", payload.isSpecial);
-
-      const createdCoin = await createCoinAPI(formData);
-
-      // Optimistic update OR reload
-      setCoins((prev) => [createdCoin, ...prev]);
-
-      return { success: true, coin: createdCoin };
-    } catch (err) {
-      console.error("Create coin error:", err);
-      return {
-        success: false,
-        message: err.response?.data?.message || "Failed to create coin",
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // UPDATE coin with optional new images
-  const updateCoin = async (id, payload) => {
-    try {
-      setLoading(true);
-
-      const formData = new FormData();
-
-      // Only append image fields if user selected new images
       if (payload.frontImage instanceof File) {
         formData.append("frontImage", payload.frontImage);
       }
@@ -103,28 +68,125 @@ export const CoinsProvider = ({ children }) => {
         formData.append("rearImage", payload.rearImage);
       }
 
-      // Append updated fields
-      formData.append("denomination", payload.denomination);
-      formData.append("year", payload.year);
-      formData.append("mint", payload.mint);
-      formData.append("condition", payload.condition);
-      formData.append("mark", payload.mark);
-      formData.append("isSpecial", payload.isSpecial);
+      if (payload.denomination !== undefined)
+        formData.append("denomination", payload.denomination);
+      if (payload.year !== undefined)
+        formData.append("year", payload.year);
+      if (payload.mint !== undefined)
+        formData.append("mint", payload.mint);
+      if (payload.condition !== undefined)
+        formData.append("condition", payload.condition);
+      if (payload.mark !== undefined)
+        formData.append("mark", payload.mark);
+      if (payload.isSpecial !== undefined)
+        formData.append("isSpecial", payload.isSpecial);
 
-      const updatedCoin = await updateCoinAPI(id, formData);
+      const res = await createCoinAPI(formData);
 
-      // Replace in local state
-      setCoins((prev) =>
-        prev.map((c) => (c._id === id ? updatedCoin : c))
-      );
+      // IMPORTANT FIX: support different response shapes from the API
+      const success =
+        (res && res.data && typeof res.data.success !== "undefined" && res.data.success) ||
+        (res && typeof res.success !== "undefined" && res.success) ||
+        (res && typeof res.status === "number" && res.status >= 200 && res.status < 300);
 
-      return { success: true, coin: updatedCoin };
+      const respData = (res && res.data && res.data.data) || (res && res.data) || res;
+      const message = (res && res.data && res.data.message) || (res && res.message);
+
+      if (success) {
+        const coin = respData;
+        setCoins((prev) => [coin, ...prev]);
+        toast.success(message || "Coin created");
+        return { success: true, coin };
+      }
+
+      // Fallback: if API returned created object without a success flag, treat as success if it has an id
+      if (respData && (respData._id || respData.id)) {
+        const coin = respData;
+        setCoins((prev) => [coin, ...prev]);
+        toast.success(message || "Coin created");
+        return { success: true, coin };
+      }
+
+      toast.error(message || "Create failed");
+      return { success: false };
+
     } catch (err) {
-      console.error("Update coin error:", err);
-      return {
-        success: false,
-        message: err.response?.data?.message || "Failed to update coin",
-      };
+      const msg = err.response?.data?.message || err.message || "Create failed";
+      toast.error(msg);
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // UPDATE coin
+  const updateCoin = async (id, payload) => {
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+
+      if (payload.frontImage instanceof File)
+        formData.append("frontImage", payload.frontImage);
+      if (payload.rearImage instanceof File)
+        formData.append("rearImage", payload.rearImage);
+
+      if (payload.denomination !== undefined)
+        formData.append("denomination", payload.denomination);
+      if (payload.year !== undefined)
+        formData.append("year", payload.year);
+      if (payload.mint !== undefined)
+        formData.append("mint", payload.mint);
+      if (payload.condition !== undefined)
+        formData.append("condition", payload.condition);
+      if (payload.mark !== undefined)
+        formData.append("mark", payload.mark);
+      if (payload.isSpecial !== undefined)
+        formData.append("isSpecial", payload.isSpecial);
+
+      const res = await updateCoinAPI(id, formData);
+
+      // IMPORTANT FIX: support different response shapes from the API
+      const success =
+        (res && res.data && typeof res.data.success !== "undefined" && res.data.success) ||
+        (res && typeof res.success !== "undefined" && res.success) ||
+        (res && typeof res.status === "number" && res.status >= 200 && res.status < 300);
+
+      const respData = (res && res.data && res.data.data) || (res && res.data) || res;
+      const message = (res && res.data && res.data.message) || (res && res.message);
+
+      if (success) {
+        const updatedCoin = respData;
+
+        setCoins((prev) =>
+          prev.map((c) => (c._id === id ? updatedCoin : c))
+        );
+
+        toast.success(message || "Coin updated");
+
+        return { success: true, coin: updatedCoin };
+      }
+
+      // Fallback: if API returned updated object without a success flag, treat as success if it has an id
+      if (respData && (respData._id || respData.id)) {
+        const updatedCoin = respData;
+
+        setCoins((prev) =>
+          prev.map((c) => (c._id === id ? updatedCoin : c))
+        );
+
+        toast.success(message || "Coin updated");
+
+        return { success: true, coin: updatedCoin };
+      }
+
+      toast.error(message || "Update failed");
+      return { success: false };
+
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || "Update failed";
+      toast.error(msg);
+      return { success: false, message: msg };
     } finally {
       setLoading(false);
     }
@@ -134,37 +196,54 @@ export const CoinsProvider = ({ children }) => {
   const deleteCoin = async (id) => {
     try {
       setLoading(true);
-      await deleteCoinAPI(id);
 
-      // Optimistic removal
-      setCoins((prev) => prev.filter((c) => c._id !== id));
+      const res = await deleteCoinAPI(id);
 
-      return { success: true };
+      // support different response shapes from the API (data.success, top-level success, HTTP 2xx, deletedCount, deleted id fields)
+      const success =
+        (res && res.data && typeof res.data.success !== "undefined" && res.data.success) ||
+        (res && typeof res.success !== "undefined" && res.success) ||
+        (res && typeof res.status === "number" && res.status >= 200 && res.status < 300) ||
+        (res && res.data && ((res.data.deletedCount && res.data.deletedCount > 0) || (res.data.data && res.data.data.deletedCount && res.data.data.deletedCount > 0))) ||
+        (res && res.data && (res.data._id || res.data.id || res.data.deletedId));
+
+      const message = (res && res.data && res.data.message) || (res && res.message);
+
+      if (success) {
+        // remove by either _id or id to cover different object shapes
+        setCoins((prev) => prev.filter((c) => c._id !== id && c.id !== id));
+        toast.success(message || "Coin deleted");
+        return { success: true };
+      }
+
+      toast.error(message || "Delete failed");
+      return { success: false };
+
     } catch (err) {
-      console.error("Delete coin error:", err);
-      return {
-        success: false,
-        message: err.response?.data?.message || "Failed to delete coin",
-      };
+      const msg = err.response?.data?.message || err.message || "Delete failed";
+      toast.error(msg);
+      return { success: false, message: msg };
     } finally {
       setLoading(false);
     }
   };
 
-  const value = {
-    coins,
-    loading,
-    error,
-    activeCoin,
-    loadCoins,
-    getCoin,
-    createCoin,
-    updateCoin,
-    deleteCoin,
-  };
-
   return (
-    <CoinsContext.Provider value={value}>{children}</CoinsContext.Provider>
+    <CoinsContext.Provider
+      value={{
+        coins,
+        loading,
+        activeCoin,
+        error,
+        loadCoins,
+        getCoin,
+        createCoin,
+        updateCoin,
+        deleteCoin,
+      }}
+    >
+      {children}
+    </CoinsContext.Provider>
   );
 };
 
