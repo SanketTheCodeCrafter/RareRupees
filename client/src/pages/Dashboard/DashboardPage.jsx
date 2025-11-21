@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import Filters from "../../components/dashboard/Filters";
 import SortDropdown from "../../components/dashboard/SortDropdown";
 import CoinGrid from "../../components/dashboard/CoinGrid";
+import SearchBar from "../../components/dashboard/SearchBar";
 
 import CoinDetailModal from "../../components/modal/CoinDetailModal";
 import CoinModal from "../../components/modal/CoinModal";
@@ -11,7 +12,6 @@ import AddCoinButton from "../../components/dashboard/AddCoinButton";
 
 import { useCoins } from "../../context/CoinsContext";
 import { useAuth } from "../../context/AuthContext";
-import toast from "react-hot-toast";
 
 export default function DashboardPage() {
   const { coins = [], loading, deleteCoin } = useCoins();
@@ -28,6 +28,9 @@ export default function DashboardPage() {
 
   // SORT
   const [sortType, setSortType] = useState("new");
+
+  // SEARCH
+  const [searchQuery, setSearchQuery] = useState("");
 
   // DELETE CONFIRM
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -47,6 +50,17 @@ export default function DashboardPage() {
 
     let list = [...coins];
 
+    // SEARCH
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter((c) =>
+        String(c.year).includes(q) ||
+        String(c.mark).toLowerCase().includes(q) ||
+        String(c.denomination).toLowerCase().includes(q) ||
+        String(c.mint).toLowerCase().includes(q)
+      );
+    }
+
     // FILTER
     if (activeFilter !== "All") {
       if (activeFilter === "Special") {
@@ -65,7 +79,7 @@ export default function DashboardPage() {
     if (sortType === "condition-asc") list.sort((a, b) => a.condition - b.condition);
 
     return { filteredCoins: list, counts };
-  }, [coins, activeFilter, sortType]);
+  }, [coins, activeFilter, sortType, searchQuery]);
 
   // DELETE CONFIRMATION HANDLER
   const confirmDelete = async () => {
@@ -80,8 +94,9 @@ export default function DashboardPage() {
 
   return (
     <>
-      {/* TOP BAR → Sorting */}
-      <div className="flex justify-end items-center mt-4 mb-4">
+      {/* TOP BAR → Search & Sorting */}
+      <div className="flex flex-col md:flex-row justify-between items-center mt-6 mb-6 gap-4">
+        <SearchBar onSearch={setSearchQuery} />
         <SortDropdown onSort={setSortType} />
       </div>
 

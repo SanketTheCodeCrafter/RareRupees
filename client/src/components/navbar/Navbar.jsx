@@ -21,10 +21,8 @@ export default function Navbar() {
         RareRupees
       </Link>
 
-      {/* Center Search */}
-      <div className="flex-1 max-w-xl mx-auto">
-        <SearchBar />
-      </div>
+      {/* Spacer */}
+      <div className="flex-1" />
 
       {/* Login/Logout */}
       {isAdmin ? (
