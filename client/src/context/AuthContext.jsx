@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { loginAdmin } from "../api/auth.api";
+import toast from "react-hot-toast";
 
 const AuthContext = createContext();
 
@@ -42,7 +43,10 @@ export const AuthProvider = ({ children }) => {
 
   // Listen for forced logout from Axios interceptor
   useEffect(() => {
-    const handler = () => logout();
+    const handler = () => {
+      logout();
+      toast.error("Session expired. Please login again.");
+    };
     window.addEventListener("rr-logout", handler);
     return () => window.removeEventListener("rr-logout", handler);
   }, []);

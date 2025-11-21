@@ -1,7 +1,7 @@
-// filename: src/components/modal/CoinModal.jsx
 import { useEffect, useRef, useState } from "react";
 import { useCoins } from "../../context/CoinsContext";
 import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 export default function CoinModal({ initial = null, mode = "create", onClose }) {
   const { createCoin, updateCoin } = useCoins();
@@ -9,7 +9,6 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
 
   const [frontFile, setFrontFile] = useState(null); // File object
   const [rearFile, setRearFile] = useState(null); // File object
-
   const [frontPreview, setFrontPreview] = useState("");
   const [rearPreview, setRearPreview] = useState("");
 
@@ -109,7 +108,10 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      toast.error("Please check the form for errors.");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -142,7 +144,9 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
       onClose?.();
     } catch (err) {
       console.error("CoinModal submit error:", err);
-      setErrors({ submit: err.message || "Failed to save" });
+      const msg = err.message || "Failed to save";
+      setErrors({ submit: msg });
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

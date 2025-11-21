@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -10,8 +11,12 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     const res = await login(username, password);
-    if (res.success) navigate("/");
-    else alert(res.message);
+    if (res.success) {
+      toast.success("Welcome back!");
+      navigate("/");
+    } else {
+      toast.error(res.message);
+    }
   };
 
   return (

@@ -29,12 +29,46 @@ export default function App() {
 
       <Toaster
         position="top-right"
+        reverseOrder={false}
+        gutter={8}
         toastOptions={{
+          duration: 5000,
           style: {
-            background: "#111827",
-            color: "white",
-            border: "1px solid #374151",
+            background: '#1e293b',
+            color: '#f8fafc',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: '500',
+            padding: '16px 24px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            maxWidth: '500px',
           },
+          success: {
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#1e293b',
+            },
+            style: {
+              border: '1px solid rgba(74, 222, 128, 0.2)',
+              background: 'rgba(30, 41, 59, 0.95)',
+            }
+          },
+          error: {
+            iconTheme: {
+              primary: '#f87171',
+              secondary: '#1e293b',
+            },
+            style: {
+              border: '1px solid rgba(248, 113, 113, 0.2)',
+              background: 'rgba(30, 41, 59, 0.95)',
+            }
+          },
+          loading: {
+            style: {
+              border: '1px solid rgba(96, 165, 250, 0.2)',
+            }
+          }
         }}
       />
     </>

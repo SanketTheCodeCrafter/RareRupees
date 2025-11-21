@@ -7,18 +7,18 @@ export const getCoins = async (req, res) => {
     res.json(coins);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 export const getCoinById = async (req, res) => {
   try {
     const coin = await Coin.findById(req.params.id);
-    if (!coin) return res.status(404).json({ message: "Coin not found" });
+    if (!coin) return res.status(404).json({ success: false, message: "Coin not found" });
     res.json(coin);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

@@ -11,6 +11,7 @@ import AddCoinButton from "../../components/dashboard/AddCoinButton";
 
 import { useCoins } from "../../context/CoinsContext";
 import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 export default function DashboardPage() {
   const { coins = [], loading, deleteCoin } = useCoins();
@@ -60,7 +61,11 @@ export default function DashboardPage() {
   // DELETE CONFIRMATION HANDLER
   const confirmDelete = async () => {
     if (!deleteTarget) return;
-    await deleteCoin(deleteTarget._id);
+    const res = await deleteCoin(deleteTarget._id);
+    if (res.success) {
+      // toast is already handled in context, but we can add specific UI feedback if needed
+      // or just close the modal
+    }
     setDeleteTarget(null);
   };
 

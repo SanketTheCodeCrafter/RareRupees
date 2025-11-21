@@ -33,7 +33,7 @@ export const CoinsProvider = ({ children }) => {
       setCoins(res);
     } catch (err) {
       console.error("Error loading coins:", err);
-      toast.error("Failed to load coins");
+      toast.error(err.response?.data?.message || "Failed to load coins");
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export const CoinsProvider = ({ children }) => {
       setActiveCoin(coin);
       return coin;
     } catch (err) {
-      toast.error("Failed to fetch coin");
+      toast.error(err.response?.data?.message || "Failed to fetch coin");
     }
   };
 
