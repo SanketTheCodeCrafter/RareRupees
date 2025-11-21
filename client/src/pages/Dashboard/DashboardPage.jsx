@@ -33,8 +33,17 @@ export default function DashboardPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   // FILTER + SORT LOGIC
-  const filteredCoins = useMemo(() => {
-    if (!coins.length) return [];
+  const { filteredCoins, counts } = useMemo(() => {
+    const counts = { All: coins.length, Special: 0 };
+
+    // Calculate counts
+    coins.forEach(c => {
+      if (c.isSpecial) counts.Special = (counts.Special || 0) + 1;
+      const d = String(c.denomination).trim();
+      counts[d] = (counts[d] || 0) + 1;
+    });
+
+    if (!coins.length) return { filteredCoins: [], counts };
 
     let list = [...coins];
 
@@ -43,7 +52,7 @@ export default function DashboardPage() {
       if (activeFilter === "Special") {
         list = list.filter((c) => c.isSpecial);
       } else {
-        list = list.filter((c) => c.denomination === activeFilter);
+        list = list.filter((c) => String(c.denomination).trim() == String(activeFilter));
       }
     }
 
@@ -55,7 +64,7 @@ export default function DashboardPage() {
     if (sortType === "condition-desc") list.sort((a, b) => b.condition - a.condition);
     if (sortType === "condition-asc") list.sort((a, b) => a.condition - b.condition);
 
-    return list;
+    return { filteredCoins: list, counts };
   }, [coins, activeFilter, sortType]);
 
   // DELETE CONFIRMATION HANDLER
@@ -77,7 +86,7 @@ export default function DashboardPage() {
       </div>
 
       {/* FILTERS */}
-      <Filters active={activeFilter} onChange={setActiveFilter} />
+      <Filters active={activeFilter} onChange={setActiveFilter} counts={counts} />
 
       {/* COIN GRID */}
       <CoinGrid
