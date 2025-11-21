@@ -152,52 +152,69 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
     }
   };
 
-  const handleBackdrop = (e) => {
-    if (drawerRef.current && !drawerRef.current.contains(e.target)) {
-      onClose?.();
-    }
-  };
-
   return (
-    <div className="fixed inset-0 z-50" onMouseDown={handleBackdrop} aria-modal="true">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-50 flex justify-end isolate" aria-modal="true">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-fade-in"
+        onClick={() => onClose?.()}
+      />
 
+      {/* Drawer */}
       <div
         ref={drawerRef}
-        onMouseDown={(e) => e.stopPropagation()}
-        className="absolute right-0 top-0 h-full w-full md:w-[540px] bg-gray-900 text-white shadow-2xl overflow-auto"
+        className="relative w-full sm:w-[540px] h-full bg-gray-900/95 backdrop-blur-xl border-l border-white/10 shadow-2xl flex flex-col animate-slide-in-right"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">{mode === "create" ? "Add Coin" : "Edit Coin"}</h3>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onClose?.()}
-                className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700"
-              >
-                Close
-              </button>
-            </div>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-gray-900/50 backdrop-blur-md z-10 shrink-0">
+          <div>
+            <h3 className="text-xl font-bold text-white tracking-tight">
+              {mode === "create" ? "Add New Coin" : "Edit Coin Details"}
+            </h3>
+            <p className="text-xs text-gray-400 mt-1">
+              {mode === "create" ? "Fill in the details to add a new coin to the collection." : "Update the information for this coin."}
+            </p>
           </div>
+          <button
+            onClick={() => onClose?.()}
+            className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-gray-300">Front Image</label>
-                <label className="mt-2 block cursor-pointer group">
-                  {frontPreview ? (
-                    <div className="relative w-full h-48 rounded-md bg-black/20 overflow-hidden">
-                      <img src={frontPreview} alt="Front preview" className="w-full h-full object-contain" />
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-white font-medium">Change File</span>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+          <form id="coin-form" onSubmit={handleSubmit} className="space-y-8">
+
+            {/* Image Upload Section */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300 ml-1">Front Image</label>
+                <label className="block cursor-pointer group relative">
+                  <div className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all duration-300 ${errors.frontImage ? 'border-red-500/50 bg-red-500/5' : 'border-dashed border-gray-700 hover:border-teal-500/50 hover:bg-white/5 bg-black/20'}`}>
+                    {frontPreview ? (
+                      <>
+                        <img src={frontPreview} alt="Front preview" className="w-full h-full object-contain p-2" />
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-[2px]">
+                          <svg className="w-8 h-8 text-teal-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-white font-medium text-sm">Change Front Image</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 group-hover:text-teal-400 transition-colors">
+                        <svg className="w-10 h-10 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span className="text-sm font-medium">Choose Front Image</span>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="w-full h-48 flex flex-col items-center justify-center rounded-md bg-black/10 text-gray-400 border-2 border-dashed border-gray-700 hover:border-gray-500 hover:bg-black/20 transition-all">
-                      <span className="text-2xl mb-2">+</span>
-                      <span>Choose File</span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   <input
                     type="file"
                     accept="image/*"
@@ -205,25 +222,32 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
                     className="hidden"
                   />
                 </label>
-                {errors.frontImage && <p className="text-xs text-red-400 mt-1">{errors.frontImage}</p>}
+                {errors.frontImage && <p className="text-xs text-red-400 ml-1">{errors.frontImage}</p>}
               </div>
 
-              <div>
-                <label className="text-sm text-gray-300">Rear Image</label>
-                <label className="mt-2 block cursor-pointer group">
-                  {rearPreview ? (
-                    <div className="relative w-full h-48 rounded-md bg-black/20 overflow-hidden">
-                      <img src={rearPreview} alt="Rear preview" className="w-full h-full object-contain" />
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-white font-medium">Change File</span>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300 ml-1">Rear Image</label>
+                <label className="block cursor-pointer group relative">
+                  <div className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all duration-300 ${errors.rearImage ? 'border-red-500/50 bg-red-500/5' : 'border-dashed border-gray-700 hover:border-teal-500/50 hover:bg-white/5 bg-black/20'}`}>
+                    {rearPreview ? (
+                      <>
+                        <img src={rearPreview} alt="Rear preview" className="w-full h-full object-contain p-2" />
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-[2px]">
+                          <svg className="w-8 h-8 text-teal-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-white font-medium text-sm">Change Rear Image</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 group-hover:text-teal-400 transition-colors">
+                        <svg className="w-10 h-10 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span className="text-sm font-medium">Choose Rear Image</span>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="w-full h-48 flex flex-col items-center justify-center rounded-md bg-black/10 text-gray-400 border-2 border-dashed border-gray-700 hover:border-gray-500 hover:bg-black/20 transition-all">
-                      <span className="text-2xl mb-2">+</span>
-                      <span>Choose File</span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   <input
                     type="file"
                     accept="image/*"
@@ -231,81 +255,152 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
                     className="hidden"
                   />
                 </label>
-                {errors.rearImage && <p className="text-xs text-red-400 mt-1">{errors.rearImage}</p>}
+                {errors.rearImage && <p className="text-xs text-red-400 ml-1">{errors.rearImage}</p>}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-gray-300">Denomination</label>
-                <div className="mt-1 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300">₹</span>
-                  <input
-                    value={denomination}
-                    onChange={(e) => {
-                      // strip leading rupee symbol if pasted/typed and keep raw value in state
-                      const val = e.target.value.replace(/^\u20B9\s?/, "");
-                      setDenomination(val);
-                    }}
-                    className="mt-0 w-full px-3 py-2 pl-8 rounded bg-black/20"
-                    type="text"
-                  />
+            <div className="h-px bg-white/10" />
+
+            {/* Form Fields */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-gray-300 ml-1">Denomination</label>
+                  <div className="relative group">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-teal-400 transition-colors">₹</span>
+                    <input
+                      value={denomination}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/^\u20B9\s?/, "");
+                        setDenomination(val);
+                      }}
+                      className={`w-full pl-8 pr-4 py-2.5 rounded-lg bg-white/5 border ${errors.denomination ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-teal-500/50'} text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-teal-500/50 focus:bg-white/10 transition-all`}
+                      type="text"
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                  {errors.denomination && <p className="text-xs text-red-400 ml-1">{errors.denomination}</p>}
                 </div>
-                {errors.denomination && <p className="text-xs text-red-400 mt-1">{errors.denomination}</p>}
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-gray-300 ml-1">Year</label>
+                  <input
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                    type="number"
+                    placeholder="e.g. 1947"
+                    className={`w-full px-4 py-2.5 rounded-lg bg-white/5 border ${errors.year ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-teal-500/50'} text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-teal-500/50 focus:bg-white/10 transition-all`}
+                  />
+                  {errors.year && <p className="text-xs text-red-400 ml-1">{errors.year}</p>}
+                </div>
               </div>
 
-              <div>
-                <label className="text-sm text-gray-300">Year</label>
-                <input value={year} onChange={(e) => setYear(e.target.value)} type="number" className="mt-1 w-full px-3 py-2 rounded bg-black/20" />
-                {errors.year && <p className="text-xs text-red-400 mt-1">{errors.year}</p>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-gray-300 ml-1">Mint</label>
+                  <div className="relative">
+                    <select
+                      value={mint}
+                      onChange={(e) => setMint(e.target.value)}
+                      className={`w-full px-4 py-2.5 rounded-lg bg-white/5 border ${errors.mint ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-teal-500/50'} text-white appearance-none focus:outline-none focus:ring-1 focus:ring-teal-500/50 focus:bg-white/10 transition-all cursor-pointer`}
+                    >
+                      <option value="" className="bg-gray-900 text-gray-400">Select Mint Location</option>
+                      <option value="Mumbai" className="bg-gray-900 text-white">Mumbai</option>
+                      <option value="Hyderabad" className="bg-gray-900 text-white">Hyderabad</option>
+                      <option value="Kolkata" className="bg-gray-900 text-white">Kolkata</option>
+                      <option value="Noida" className="bg-gray-900 text-white">Noida</option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                  {errors.mint && <p className="text-xs text-red-400 ml-1">{errors.mint}</p>}
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-gray-300 ml-1">Condition (1-10)</label>
+                  <input
+                    value={condition}
+                    onChange={(e) => setCondition(e.target.value)}
+                    type="number"
+                    min="1"
+                    max="10"
+                    placeholder="10"
+                    className={`w-full px-4 py-2.5 rounded-lg bg-white/5 border ${errors.condition ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-teal-500/50'} text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-teal-500/50 focus:bg-white/10 transition-all`}
+                  />
+                  {errors.condition && <p className="text-xs text-red-400 ml-1">{errors.condition}</p>}
+                </div>
               </div>
 
-              <div>
-                <label className="text-sm text-gray-300">Mint</label>
-                <select
-                  value={mint}
-                  onChange={(e) => setMint(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 rounded bg-black/20 text-white appearance-none"
-                >
-                  <option value="" className="bg-gray-800 text-gray-400">Select Mint</option>
-                  <option value="Mumbai" className="bg-gray-800 text-white">Mumbai</option>
-                  <option value="Hyderabad" className="bg-gray-800 text-white">Hyderabad</option>
-                  <option value="Kolkata" className="bg-gray-800 text-white">Kolkata</option>
-                  <option value="Noida" className="bg-gray-800 text-white">Noida</option>
-                </select>
-                {errors.mint && <p className="text-xs text-red-400 mt-1">{errors.mint}</p>}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-300 ml-1">Mark / Description</label>
+                <input
+                  value={mark}
+                  onChange={(e) => setMark(e.target.value)}
+                  placeholder="e.g. Diamond mark below date"
+                  className={`w-full px-4 py-2.5 rounded-lg bg-white/5 border ${errors.mark ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-teal-500/50'} text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-teal-500/50 focus:bg-white/10 transition-all`}
+                />
+                {errors.mark && <p className="text-xs text-red-400 ml-1">{errors.mark}</p>}
               </div>
 
-              <div>
-                <label className="text-sm text-gray-300">Condition (1-10)</label>
-                <input value={condition} onChange={(e) => setCondition(e.target.value)} type="number" min="1" max="10" className="mt-1 w-full px-3 py-2 rounded bg-black/20" />
-                {errors.condition && <p className="text-xs text-red-400 mt-1">{errors.condition}</p>}
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="text-sm text-gray-300">Mark</label>
-                <input value={mark} onChange={(e) => setMark(e.target.value)} className="mt-1 w-full px-3 py-2 rounded bg-black/20" />
-                {errors.mark && <p className="text-xs text-red-400 mt-1">{errors.mark}</p>}
+              <div className="pt-2">
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.02] hover:bg-white/5 cursor-pointer transition-colors group">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={isSpecial}
+                      onChange={(e) => setIsSpecial(e.target.checked)}
+                      className="peer sr-only"
+                    />
+                    <div className="w-10 h-6 bg-gray-700 rounded-full peer-checked:bg-teal-500/80 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+                  </div>
+                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors">Mark this coin as a Special / Rare edition</span>
+                </label>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm text-gray-300">
-                <input type="checkbox" checked={isSpecial} onChange={(e) => setIsSpecial(e.target.checked)} className="w-4 h-4" />
-                <span>Mark as Special</span>
-              </label>
-            </div>
-
-            {errors.submit && <div className="text-red-400">{errors.submit}</div>}
-
-            <div className="flex items-center justify-end gap-3 pt-4">
-              <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-gray-800 hover:bg-gray-700" disabled={loading}>Cancel</button>
-
-              <button type="submit" className="px-4 py-2 rounded bg-teal-400 text-black font-semibold hover:bg-teal-300" disabled={loading}>
-                {loading ? "Saving..." : mode === "create" ? "Create" : "Save"}
-              </button>
-            </div>
+            {errors.submit && (
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-2">
+                <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {errors.submit}
+              </div>
+            )}
           </form>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="p-6 border-t border-white/10 bg-gray-900/80 backdrop-blur-md z-10 shrink-0 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+            disabled={loading}
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={handleSubmit}
+            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-white text-sm font-semibold shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Saving...</span>
+              </div>
+            ) : (
+              mode === "create" ? "Create Coin" : "Save Changes"
+            )}
+          </button>
         </div>
       </div>
     </div>
