@@ -184,43 +184,53 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-300">Front Image</label>
-                <div className="mt-2">
+                <label className="mt-2 block cursor-pointer group">
                   {frontPreview ? (
-                    <img src={frontPreview} alt="Front preview" className="w-full h-48 object-contain rounded-md bg-black/20" />
+                    <div className="relative w-full h-48 rounded-md bg-black/20 overflow-hidden">
+                      <img src={frontPreview} alt="Front preview" className="w-full h-full object-contain" />
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-white font-medium">Change File</span>
+                      </div>
+                    </div>
                   ) : (
-                    <div className="w-full h-48 flex items-center justify-center rounded-md bg-black/10 text-gray-400">
-                      Front preview
+                    <div className="w-full h-48 flex flex-col items-center justify-center rounded-md bg-black/10 text-gray-400 border-2 border-dashed border-gray-700 hover:border-gray-500 hover:bg-black/20 transition-all">
+                      <span className="text-2xl mb-2">+</span>
+                      <span>Choose File</span>
                     </div>
                   )}
-                </div>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFrontFile(e.target.files?.[0])}
-                  className="mt-3 w-full text-sm text-gray-300"
-                />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFrontFile(e.target.files?.[0])}
+                    className="hidden"
+                  />
+                </label>
                 {errors.frontImage && <p className="text-xs text-red-400 mt-1">{errors.frontImage}</p>}
               </div>
 
               <div>
                 <label className="text-sm text-gray-300">Rear Image</label>
-                <div className="mt-2">
+                <label className="mt-2 block cursor-pointer group">
                   {rearPreview ? (
-                    <img src={rearPreview} alt="Rear preview" className="w-full h-48 object-contain rounded-md bg-black/20" />
+                    <div className="relative w-full h-48 rounded-md bg-black/20 overflow-hidden">
+                      <img src={rearPreview} alt="Rear preview" className="w-full h-full object-contain" />
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-white font-medium">Change File</span>
+                      </div>
+                    </div>
                   ) : (
-                    <div className="w-full h-48 flex items-center justify-center rounded-md bg-black/10 text-gray-400">
-                      Rear preview
+                    <div className="w-full h-48 flex flex-col items-center justify-center rounded-md bg-black/10 text-gray-400 border-2 border-dashed border-gray-700 hover:border-gray-500 hover:bg-black/20 transition-all">
+                      <span className="text-2xl mb-2">+</span>
+                      <span>Choose File</span>
                     </div>
                   )}
-                </div>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setRearFile(e.target.files?.[0])}
-                  className="mt-3 w-full text-sm text-gray-300"
-                />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setRearFile(e.target.files?.[0])}
+                    className="hidden"
+                  />
+                </label>
                 {errors.rearImage && <p className="text-xs text-red-400 mt-1">{errors.rearImage}</p>}
               </div>
             </div>
@@ -228,7 +238,19 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-300">Denomination</label>
-                <input value={denomination} onChange={(e) => setDenomination(e.target.value)} className="mt-1 w-full px-3 py-2 rounded bg-black/20" />
+                <div className="mt-1 relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300">₹</span>
+                  <input
+                    value={denomination}
+                    onChange={(e) => {
+                      // strip leading rupee symbol if pasted/typed and keep raw value in state
+                      const val = e.target.value.replace(/^\u20B9\s?/, "");
+                      setDenomination(val);
+                    }}
+                    className="mt-0 w-full px-3 py-2 pl-8 rounded bg-black/20"
+                    type="text"
+                  />
+                </div>
                 {errors.denomination && <p className="text-xs text-red-400 mt-1">{errors.denomination}</p>}
               </div>
 
@@ -240,7 +262,17 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
 
               <div>
                 <label className="text-sm text-gray-300">Mint</label>
-                <input value={mint} onChange={(e) => setMint(e.target.value)} className="mt-1 w-full px-3 py-2 rounded bg-black/20" />
+                <select
+                  value={mint}
+                  onChange={(e) => setMint(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 rounded bg-black/20 text-white appearance-none"
+                >
+                  <option value="" className="bg-gray-800 text-gray-400">Select Mint</option>
+                  <option value="Mumbai" className="bg-gray-800 text-white">Mumbai</option>
+                  <option value="Hyderabad" className="bg-gray-800 text-white">Hyderabad</option>
+                  <option value="Kolkata" className="bg-gray-800 text-white">Kolkata</option>
+                  <option value="Noida" className="bg-gray-800 text-white">Noida</option>
+                </select>
                 {errors.mint && <p className="text-xs text-red-400 mt-1">{errors.mint}</p>}
               </div>
 
