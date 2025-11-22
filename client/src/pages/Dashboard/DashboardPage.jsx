@@ -103,6 +103,14 @@ export default function DashboardPage() {
       {/* FILTERS */}
       <Filters active={activeFilter} onChange={setActiveFilter} counts={counts} />
 
+      {/* RESULTS HEADER */}
+      <div className="flex items-center justify-between mt-8 mb-4 px-1">
+        <h2 className="text-xl font-semibold text-gray-200 flex items-center gap-2">
+          <span className="w-1.5 h-6 bg-teal-500 rounded-full"></span>
+          {filteredCoins.length} {filteredCoins.length === 1 ? 'Coin' : 'Coins'} Found
+        </h2>
+      </div>
+
       {/* COIN GRID */}
       <CoinGrid
         coins={filteredCoins}
