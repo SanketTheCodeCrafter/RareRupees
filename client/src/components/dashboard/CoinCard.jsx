@@ -41,7 +41,7 @@ export default function CoinCard({ coin, onSelect, onEdit, onDelete }) {
       <div className="space-y-1 px-1">
         <div className="flex justify-between items-start">
           <h3 className="text-xl font-bold text-white group-hover:text-teal-400 transition-colors">
-            {coin.denomination}
+            {coin.isSpecial ? coin.denomination : (coin.denomination.toString().startsWith('₹') ? coin.denomination : `₹${coin.denomination}`)}
           </h3>
           <span className="text-lg font-medium text-gray-300">
             {coin.year}
