@@ -1,9 +1,29 @@
-// filename: src/components/dashboard/CoinCard.jsx
+import { useRef, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
 export default function CoinCard({ coin, onSelect, onEdit, onDelete }) {
   const { isAdmin } = useAuth();
+  const cardRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleCardClick = () => {
     if (onSelect) onSelect(coin);
@@ -11,10 +31,11 @@ export default function CoinCard({ coin, onSelect, onEdit, onDelete }) {
 
   return (
     <div
+      ref={cardRef}
       onClick={handleCardClick}
-      className="group relative bg-gray-900/60 backdrop-blur-md rounded-2xl p-3 border border-white/10 
+      className={`group relative bg-gray-900/60 backdrop-blur-md rounded-2xl p-3 border border-white/10 
                  hover:border-teal-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-teal-900/20 
-                 hover:-translate-y-1 cursor-pointer overflow-hidden"
+                 hover:-translate-y-1 cursor-pointer overflow-hidden ${isVisible ? 'reveal-on-scroll' : 'opacity-0'}`}
     >
       {/* IMAGES GRID */}
       <div className="grid grid-cols-2 gap-2 mb-4 relative">
