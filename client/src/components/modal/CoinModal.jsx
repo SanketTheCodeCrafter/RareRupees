@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCoins } from "../../context/CoinsContext";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
+import { FaCamera, FaImage } from "react-icons/fa";
 
 export default function CoinModal({ initial = null, mode = "create", onClose }) {
   const { createCoin, updateCoin } = useCoins();
@@ -192,69 +193,109 @@ export default function CoinModal({ initial = null, mode = "create", onClose }) 
 
             {/* Image Upload Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Front Image */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-300 ml-1">Front Image</label>
-                <label className="block cursor-pointer group relative">
-                  <div className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all duration-300 ${errors.frontImage ? 'border-red-500/50 bg-red-500/5' : 'border-dashed border-gray-700 hover:border-teal-500/50 hover:bg-white/5 bg-black/20'}`}>
-                    {frontPreview ? (
-                      <>
-                        <img src={frontPreview} alt="Front preview" className="w-full h-full object-contain p-2" />
-                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-[2px]">
-                          <svg className="w-8 h-8 text-teal-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <span className="text-white font-medium text-sm">Change Front Image</span>
+                <div className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all duration-300 ${errors.frontImage ? 'border-red-500/50 bg-red-500/5' : 'border-dashed border-gray-700 bg-black/20'}`}>
+                  {frontPreview && (
+                    <img src={frontPreview} alt="Front preview" className="w-full h-full object-contain p-2" />
+                  )}
+
+                  {/* Overlay Controls */}
+                  <div className={`absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-[2px] transition-all duration-200 ${frontPreview ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
+                    <span className="text-sm font-medium text-gray-300 mb-4">{frontPreview ? "Change Front Image" : "Add Front Image"}</span>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('front-camera').click()}
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-white/10 transition-all group/btn"
+                      >
+                        <div className="p-3 rounded-full bg-teal-500/20 text-teal-400 group-hover/btn:bg-teal-500 group-hover/btn:text-white transition-colors shadow-lg shadow-teal-500/10">
+                          <FaCamera size={20} />
                         </div>
-                      </>
-                    ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 group-hover:text-teal-400 transition-colors">
-                        <svg className="w-10 h-10 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span className="text-sm font-medium">Choose Front Image</span>
-                      </div>
-                    )}
+                        <span className="text-xs font-medium text-gray-400 group-hover/btn:text-white">Camera</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('front-gallery').click()}
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-white/10 transition-all group/btn"
+                      >
+                        <div className="p-3 rounded-full bg-purple-500/20 text-purple-400 group-hover/btn:bg-purple-500 group-hover/btn:text-white transition-colors shadow-lg shadow-purple-500/10">
+                          <FaImage size={20} />
+                        </div>
+                        <span className="text-xs font-medium text-gray-400 group-hover/btn:text-white">Gallery</span>
+                      </button>
+                    </div>
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setFrontFile(e.target.files?.[0])}
-                    className="hidden"
-                  />
-                </label>
+                </div>
+                <input
+                  id="front-camera"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(e) => setFrontFile(e.target.files?.[0])}
+                  className="hidden"
+                />
+                <input
+                  id="front-gallery"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFrontFile(e.target.files?.[0])}
+                  className="hidden"
+                />
                 {errors.frontImage && <p className="text-xs text-red-400 ml-1">{errors.frontImage}</p>}
               </div>
 
+              {/* Rear Image */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-300 ml-1">Rear Image</label>
-                <label className="block cursor-pointer group relative">
-                  <div className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all duration-300 ${errors.rearImage ? 'border-red-500/50 bg-red-500/5' : 'border-dashed border-gray-700 hover:border-teal-500/50 hover:bg-white/5 bg-black/20'}`}>
-                    {rearPreview ? (
-                      <>
-                        <img src={rearPreview} alt="Rear preview" className="w-full h-full object-contain p-2" />
-                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-[2px]">
-                          <svg className="w-8 h-8 text-teal-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <span className="text-white font-medium text-sm">Change Rear Image</span>
+                <div className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all duration-300 ${errors.rearImage ? 'border-red-500/50 bg-red-500/5' : 'border-dashed border-gray-700 bg-black/20'}`}>
+                  {rearPreview && (
+                    <img src={rearPreview} alt="Rear preview" className="w-full h-full object-contain p-2" />
+                  )}
+
+                  {/* Overlay Controls */}
+                  <div className={`absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-[2px] transition-all duration-200 ${rearPreview ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
+                    <span className="text-sm font-medium text-gray-300 mb-4">{rearPreview ? "Change Rear Image" : "Add Rear Image"}</span>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('rear-camera').click()}
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-white/10 transition-all group/btn"
+                      >
+                        <div className="p-3 rounded-full bg-teal-500/20 text-teal-400 group-hover/btn:bg-teal-500 group-hover/btn:text-white transition-colors shadow-lg shadow-teal-500/10">
+                          <FaCamera size={20} />
                         </div>
-                      </>
-                    ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 group-hover:text-teal-400 transition-colors">
-                        <svg className="w-10 h-10 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span className="text-sm font-medium">Choose Rear Image</span>
-                      </div>
-                    )}
+                        <span className="text-xs font-medium text-gray-400 group-hover/btn:text-white">Camera</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('rear-gallery').click()}
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-white/10 transition-all group/btn"
+                      >
+                        <div className="p-3 rounded-full bg-purple-500/20 text-purple-400 group-hover/btn:bg-purple-500 group-hover/btn:text-white transition-colors shadow-lg shadow-purple-500/10">
+                          <FaImage size={20} />
+                        </div>
+                        <span className="text-xs font-medium text-gray-400 group-hover/btn:text-white">Gallery</span>
+                      </button>
+                    </div>
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setRearFile(e.target.files?.[0])}
-                    className="hidden"
-                  />
-                </label>
+                </div>
+                <input
+                  id="rear-camera"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(e) => setRearFile(e.target.files?.[0])}
+                  className="hidden"
+                />
+                <input
+                  id="rear-gallery"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setRearFile(e.target.files?.[0])}
+                  className="hidden"
+                />
                 {errors.rearImage && <p className="text-xs text-red-400 ml-1">{errors.rearImage}</p>}
               </div>
             </div>
