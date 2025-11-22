@@ -94,22 +94,48 @@ export default function DashboardPage() {
 
   return (
     <>
-      {/* TOP BAR → Search & Sorting */}
-      <div className="flex flex-col md:flex-row justify-between items-center mt-6 mb-6 gap-4">
-        <SearchBar onSearch={setSearchQuery} />
-        <SortDropdown onSort={setSortType} />
+      {/* DASHBOARD HEADER */}
+      <div className="flex flex-col gap-6 mt-8 mb-10">
+
+        {/* Top Row: Search & Sort */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
+          <div className="flex-1 max-w-2xl">
+            <SearchBar onSearch={setSearchQuery} />
+          </div>
+          <div className="flex items-center justify-between md:justify-end gap-4">
+            <div className="text-sm text-gray-400 font-medium whitespace-nowrap hidden md:block">
+              Sort by:
+            </div>
+            <SortDropdown onSort={setSortType} />
+          </div>
+        </div>
+
+        {/* Bottom Row: Filters & Results Count */}
+        <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between border-b border-white/5 pb-6">
+          <div className="w-full md:w-auto overflow-hidden">
+            <Filters active={activeFilter} onChange={setActiveFilter} counts={counts} />
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/5">
+            <span className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></span>
+            <span className="text-sm font-medium text-gray-300">
+              {filteredCoins.length} {filteredCoins.length === 1 ? 'Coin' : 'Coins'} Found
+            </span>
+          </div>
+        </div>
+
+        {/* Mobile Only Results Count (below filters) */}
+        <div className="md:hidden flex items-center justify-between px-1">
+          <span className="text-sm font-medium text-gray-400">
+            Showing results
+          </span>
+          <span className="text-sm font-bold text-white bg-white/10 px-3 py-1 rounded-full">
+            {filteredCoins.length} Coins
+          </span>
+        </div>
       </div>
 
-      {/* FILTERS */}
-      <Filters active={activeFilter} onChange={setActiveFilter} counts={counts} />
 
-      {/* RESULTS HEADER */}
-      <div className="flex items-center justify-between mt-8 mb-4 px-1">
-        <h2 className="text-xl font-semibold text-gray-200 flex items-center gap-2">
-          <span className="w-1.5 h-6 bg-teal-500 rounded-full"></span>
-          {filteredCoins.length} {filteredCoins.length === 1 ? 'Coin' : 'Coins'} Found
-        </h2>
-      </div>
 
       {/* COIN GRID */}
       <CoinGrid

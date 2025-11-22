@@ -16,13 +16,15 @@ export default function SearchBar({ onSearch }) {
   };
 
   return (
-    <div className="relative w-full md:w-96 group">
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <FaSearch className="text-gray-500 group-focus-within:text-teal-400 transition-colors" />
+    <div className="relative w-full group">
+      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+        <FaSearch className="text-gray-500 group-focus-within:text-teal-400 transition-colors duration-300" />
       </div>
       <input
         type="text"
-        className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 focus:bg-gray-800 transition-all shadow-sm hover:bg-gray-800"
+        className="w-full pl-11 pr-11 py-3 rounded-2xl bg-gray-800/50 border border-white/10 text-white placeholder-gray-500 
+                   focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500/50 focus:bg-gray-800 
+                   hover:bg-gray-800/80 transition-all duration-300 shadow-lg shadow-black/20 backdrop-blur-sm"
         placeholder="Search by year, mark, or denomination..."
         value={query}
         onChange={handleChange}
@@ -30,7 +32,7 @@ export default function SearchBar({ onSearch }) {
       {query && (
         <button
           onClick={clearSearch}
-          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-white transition-colors"
+          className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-white transition-colors z-10"
         >
           <FaTimes />
         </button>
