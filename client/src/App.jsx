@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 
@@ -8,7 +8,7 @@ import NotFound from "./pages/NotFound";
 import "./index.css";
 import { Toaster } from "react-hot-toast";
 
-import Splash from "./components/Splash/Splash";  
+import Splash from "./components/Splash/Splash";
 
 export default function App() {
 
@@ -16,21 +16,36 @@ export default function App() {
 
   useEffect(() => {
     const seen = localStorage.getItem("seenSplash");
+    // Expire after 24 hours (like a session)
+    const EXPIRY_TIME = 1 * 60 * 1000;
+
     if (seen) {
-      setShowSplash(false);
-    } else {
-      // auto-hide splash
-      const t = setTimeout(() => {
-        localStorage.setItem("seenSplash", "true");
-        setShowSplash(false);
-      }, 6000);
-      return () => clearTimeout(t);
+      try {
+        const data = JSON.parse(seen);
+        // Check if valid object with timestamp and not expired
+        if (data && data.timestamp && (Date.now() - data.timestamp < EXPIRY_TIME)) {
+          setShowSplash(false);
+          return;
+        }
+      } catch (e) {
+        // If parsing fails or legacy format, show splash again
+      }
     }
+
+    // auto-hide splash and set timestamp
+    const t = setTimeout(() => {
+      localStorage.setItem("seenSplash", JSON.stringify({ timestamp: Date.now() }));
+      setShowSplash(false);
+    }, 6000);
+    return () => clearTimeout(t);
   }, []);
 
-  
+
   if (showSplash) {
-    return <Splash onFinish={() => setShowSplash(false)} />;
+    return <Splash onFinish={() => {
+      localStorage.setItem("seenSplash", JSON.stringify({ timestamp: Date.now() }));
+      setShowSplash(false);
+    }} />;
   }
 
   return (
