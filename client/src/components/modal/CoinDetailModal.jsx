@@ -57,16 +57,16 @@ export default function CoinDetailModal({ coin, onClose }) {
           </div>
 
           <div className="space-y-6 md:space-y-8 flex-1">
-            <div className="grid grid-cols-2 gap-y-6 md:gap-y-8 gap-x-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 md:gap-y-8 gap-x-4">
               <div>
                 <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest mb-1 md:mb-2 font-semibold">Mint Location</p>
                 <p className="text-lg md:text-xl text-gray-200 font-medium">{coin.mint}</p>
               </div>
               <div>
                 <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest mb-1 md:mb-2 font-semibold">Mint Mark</p>
-                <p className="text-lg md:text-xl text-gray-200 font-medium truncate" title={coin.mark}>{coin.mark}</p>
+                <p className="text-lg md:text-xl text-gray-200 font-medium" title={coin.mark}>{coin.mark}</p>
               </div>
-              <div className="col-span-2">
+              <div className="md:col-span-2">
                 <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest mb-1 md:mb-2 font-semibold">Condition</p>
                 <div className="flex items-center gap-4">
                   <div className="flex-1 bg-gray-800 rounded-full h-2.5 md:h-3 overflow-hidden">
@@ -78,7 +78,7 @@ export default function CoinDetailModal({ coin, onClose }) {
                   <span className="text-white font-bold text-lg">{coin.condition}/10</span>
                 </div>
               </div>
-              <div className="col-span-2">
+              <div className="md:col-span-2">
                 <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest mb-1 md:mb-2 font-semibold">Edition Type</p>
                 <div className="flex items-start">
                   <span className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-xs md:text-sm font-bold border ${coin.isSpecial ? 'bg-purple-500/10 border-purple-500/20 text-purple-300' : 'bg-gray-800 border-gray-700 text-gray-400'}`}>
