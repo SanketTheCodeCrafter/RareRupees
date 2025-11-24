@@ -13,17 +13,19 @@ export const fetchCoinAPI = async (id) => {
 };
 
 // CREATE coin (admin)
-export const createCoinAPI = async (formData) => {
+export const createCoinAPI = async (formData, config = {}) => {
   const res = await API.post("/coins", formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    ...config, // Pass onUploadProgress and other config
   });
   return res.data;
 };
 
 // UPDATE coin (admin)
-export const updateCoinAPI = async (id, formData) => {
+export const updateCoinAPI = async (id, formData, config = {}) => {
   const res = await API.put(`/coins/${id}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    ...config, // Pass onUploadProgress and other config
   });
   return res.data;
 };

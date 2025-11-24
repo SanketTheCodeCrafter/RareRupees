@@ -22,6 +22,16 @@ export const getCoinById = async (req, res) => {
   }
 };
 
+// Helper: Upload with timeout
+const uploadWithTimeout = (buffer, folder, timeoutMs = 40000) => {
+  return Promise.race([
+    uploadBufferToCloudinary(buffer, folder),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Upload timed out")), timeoutMs)
+    ),
+  ]);
+};
+
 export const createCoin = async (req, res) => {
   try {
     const {
@@ -30,7 +40,8 @@ export const createCoin = async (req, res) => {
       mint,
       condition,
       mark,
-      isSpecial
+      isSpecial,
+      useBackgroundUpload // Optional flag
     } = req.body;
 
     const frontFile = req.files?.frontImage?.[0];
@@ -40,8 +51,55 @@ export const createCoin = async (req, res) => {
       return res.status(400).json({ success: false, message: "Both images are required" });
     }
 
-    const frontImageUrl = await uploadBufferToCloudinary(frontFile.buffer, "rarerupees");
-    const rearImageUrl = await uploadBufferToCloudinary(rearFile.buffer, "rarerupees");
+    // BACKGROUND UPLOAD MODE (Optional)
+    if (useBackgroundUpload === 'true' || useBackgroundUpload === true) {
+      // 1. Create coin with "processing" status (or placeholder images)
+      const coin = new Coin({
+        frontImage: "https://res.cloudinary.com/demo/image/upload/v1/loading.png", // Placeholder
+        rearImage: "https://res.cloudinary.com/demo/image/upload/v1/loading.png",  // Placeholder
+        denomination,
+        year,
+        mint,
+        condition,
+        mark,
+        isSpecial,
+        // status: 'processing' // If schema supported it
+      });
+
+      await coin.save();
+
+      // 2. Start uploads in background (fire and forget)
+      // Note: In production, use a proper queue like BullMQ. Here we use setImmediate.
+      setImmediate(async () => {
+        try {
+          const [frontUrl, rearUrl] = await Promise.all([
+            uploadWithTimeout(frontFile.buffer, "rarerupees"),
+            uploadWithTimeout(rearFile.buffer, "rarerupees"),
+          ]);
+
+          coin.frontImage = frontUrl;
+          coin.rearImage = rearUrl;
+          await coin.save();
+          console.log(`Background upload complete for coin ${coin._id}`);
+        } catch (bgErr) {
+          console.error(`Background upload failed for coin ${coin._id}`, bgErr);
+          // Optionally update coin status to 'failed'
+        }
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Coin creation started. Images are uploading in background.",
+        data: coin
+      });
+    }
+
+    // STANDARD PARALLEL UPLOAD
+    // Upload both images in parallel with timeout
+    const [frontImageUrl, rearImageUrl] = await Promise.all([
+      uploadWithTimeout(frontFile.buffer, "rarerupees"),
+      uploadWithTimeout(rearFile.buffer, "rarerupees"),
+    ]);
 
     const coin = new Coin({
       frontImage: frontImageUrl,
@@ -64,7 +122,7 @@ export const createCoin = async (req, res) => {
 
   } catch (err) {
     console.error("createCoin error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: err.message || "Server error" });
   }
 };
 
@@ -100,12 +158,24 @@ export const updateCoin = async (req, res) => {
     const frontFile = req.files?.frontImage?.[0];
     const rearFile = req.files?.rearImage?.[0];
 
+    // Parallel upload for updates if both are present, or single if one
+    const uploadPromises = [];
     if (frontFile) {
-      sanitized.frontImage = await uploadBufferToCloudinary(frontFile.buffer, "rarerupees");
+      uploadPromises.push(
+        uploadWithTimeout(frontFile.buffer, "rarerupees").then(url => ({ key: 'frontImage', url }))
+      );
+    }
+    if (rearFile) {
+      uploadPromises.push(
+        uploadWithTimeout(rearFile.buffer, "rarerupees").then(url => ({ key: 'rearImage', url }))
+      );
     }
 
-    if (rearFile) {
-      sanitized.rearImage = await uploadBufferToCloudinary(rearFile.buffer, "rarerupees");
+    if (uploadPromises.length > 0) {
+      const results = await Promise.all(uploadPromises);
+      results.forEach(({ key, url }) => {
+        sanitized[key] = url;
+      });
     }
 
     const updated = await Coin.findByIdAndUpdate(req.params.id, sanitized, { new: true, runValidators: true });
