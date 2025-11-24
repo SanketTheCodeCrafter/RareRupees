@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"; 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 
@@ -7,7 +8,31 @@ import NotFound from "./pages/NotFound";
 import "./index.css";
 import { Toaster } from "react-hot-toast";
 
+import Splash from "./components/Splash/Splash";  
+
 export default function App() {
+
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const seen = localStorage.getItem("seenSplash");
+    if (seen) {
+      setShowSplash(false);
+    } else {
+      // auto-hide splash
+      const t = setTimeout(() => {
+        localStorage.setItem("seenSplash", "true");
+        setShowSplash(false);
+      }, 6000);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
+  
+  if (showSplash) {
+    return <Splash onFinish={() => setShowSplash(false)} />;
+  }
+
   return (
     <>
       <BrowserRouter>
@@ -74,4 +99,3 @@ export default function App() {
     </>
   );
 }
-
